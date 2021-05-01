@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>canvasでラングトンの蟻</title>
+    <script type="text/javascript">
+    <!--
+    var WIDTH  = 480;  // canvasサイズ
+    var HEIGHT = 380;  // canvasサイズ
+    var SIZE   = 5;    // セルの大きさ
+    var cellWidth  = WIDTH  / SIZE;  // セルの大きさ
+    var cellHeight = HEIGHT / SIZE;  // セルの大きさ
+    var bord = new Array(cellWidth); // ボード
+    var DEATH = -1;    // 死亡
+    var LIVE  = 1;     // 生存
+    var antX;          // 蟻の座標
+    var antY;          // 蟻の座標
+    var antRad;        // 蟻の進行方向
+    var timeoutId = null;
+
+    // canvas描画
+    function drawCanvas() {
+      var canvas  = document.createElement("canvas");
+      canvas.width  = WIDTH;
+      canvas.height = HEIGHT;
+      canvas.id     = "canvas";
+
+      // BODY のノードリストに登録する
+      document.body.appendChild(canvas);
+    }
+
+    // 初期化
+    function init() {
+      // 盤初期化
+      for (i = 0; i < cellWidth; i++) {
+        bord[i] = new Array(cellHeight);
+        
+        for (j = 0; j < cellHeight; j++) {
+          bord[i][j] = DEATH;
+        }
+      }
+      
+      //蟻の初期位置
+      antX = cellWidth/4  + Math.round(Math.random() * cellWidth/4);
+      antY = cellHeight/4 + Math.round(Math.random() * cellHeight/4);
+      antRad = Math.round( Math.random()*3) * 90;
+
+      bord[antX][antY] = LIVE;
+      
+      if(timeoutId != null) {
+        clearTimeout(timeoutId);
+      }
+    }
+
+    // 更新処理
+    function update() {
+      //現在のマスを更新
+      bord[antX][antY] = bord[antX][antY] * -1;
+
+      //現在地を更新
+      var vx;
+      var vy;
+      antRad = (antRad + 360) % 360;
+      switch(antRad) {
+        case 0:
+          vx = 1;
+          vy = 0;
+          break;
+        case 90:
+          vx = 0;
+          vy = -1;
+          break;
+        case 180:
+          vx = -1;
+          vy = 0;
+          break;
+        default:
+          vx = 0;
+          vy = 1;
+      }
+      
+      antX = antX + vx;
+      antY = antY + vy;
+
+      if(antX > cellWidth-1 ) antX = 0;
+      if(antX < 0           ) antX = cellWidth-1;
+      if(antY > cellHeight-1) antY = 0;
+      if(antY < 0           ) antY = cellHeight-1;
+
+      //移動方向更新
+      if(bord[antX][antY] == DEATH) {
+        antRad = antRad - 90;
+      } else {
+        antRad = antRad + 90;
+      }
+
+      draw();
+
+      timeoutId = setTimeout(function() {
+        update();
+      }, 10);
+    }
+
+    //描画処理
+    function draw() {
+      var canvas  = document.getElementById('canvas');
+      var context = canvas.getContext('2d');
+
+      for (i = 0; i < cellWidth; i++) {
+        for (j = 0; j < cellHeight; j++) {
+          context.beginPath();
+
+          if(i == antX && j == antY) {
+            context.fillStyle = '#FF0000';
+          } else if(bord[i][j] == DEATH) {
+            context.fillStyle = '#000000';
+          } else {
+            context.fillStyle = '#3399FF';
+          }
+
+          context.fillRect(i*SIZE, j*SIZE, SIZE, SIZE);
+        }
+      }
+
+      context.fill();
+    }
+    //-->
+    </script>
+    <style type="text/css">
+      canvas {
+        background-color: #000;
+        border: 1px solid #999;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>canvasでラングトンの蟻</h2>
+    <input id="startButton" type="button" value="スタート" onclick="init(); update();"> <br>
+    <!-- canvas描画 -->
+    <script type="text/javascript">
+      drawCanvas();
+      init();
+    </script>
+  </body>
+</html>
